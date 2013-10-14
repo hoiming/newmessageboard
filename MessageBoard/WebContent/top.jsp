@@ -3,12 +3,13 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
+<link rel="stylesheet" type="text/css" href="css/top.css">
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title></title>
 <!-- 主页面的上部分，现实当前用户和时间 -->
 </head>
 <body>
-	<div>
+	<div id="square">
 		<label>当前用户：</label>${user.username }&nbsp;&nbsp;&nbsp;${dateTimeInfo }
 	</div>
 </body>
