@@ -8,6 +8,11 @@
 <title>Insert title here</title>
 </head>
 <body>
-
+<div>
+	<div id="createTheme">发帖</div>
+	<div id="themeArea">
+	${page }
+	</div>
+</div>
 </body>
 </html>
