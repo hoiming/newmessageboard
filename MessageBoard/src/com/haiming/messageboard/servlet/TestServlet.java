@@ -1,7 +1,6 @@
 package com.haiming.messageboard.servlet;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -10,10 +9,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.haiming.messageboard.bean.DateTimeInfo;
+import com.haiming.messageboard.bean.Page;
+import com.haiming.messageboard.bean.Theme;
 import com.haiming.messageboard.bean.User;
 import com.haiming.messageboard.logic.ConcreteLoginHandler;
 import com.haiming.messageboard.logic.LoginHandler;
 import com.haiming.messageboard.logic.TestDateTimeInfo;
+import com.haiming.messageboard.logic.ThemeProvider;
 import com.haiming.messageboard.logic.TimeInterface;
 
 /**
@@ -57,6 +59,9 @@ public class TestServlet extends HttpServlet {
 			DateTimeInfo dtinfo = new DateTimeInfo(time.getDateTimeInfo());
 			request.getSession().setAttribute("dateTimeInfo", dtinfo);
 			response.sendRedirect("index.jsp");
+			ThemeProvider provider = new ThemeProvider();
+			Page<Theme> page = new Page<Theme>(Theme.class);
+			request.getSession().setAttribute("page", provider.getThemes(page));
 		}
 	}
 
