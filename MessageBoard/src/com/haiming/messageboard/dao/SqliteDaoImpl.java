@@ -7,6 +7,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.text.DateFormat;
@@ -33,11 +34,37 @@ public class SqliteDaoImpl<T> implements Dao<T> {
 	private static final String TABLE_ALIAS = "t";
 
 	@Override
-	public Page getNextPage(int currPageIndex, String sql) {
-		// TODO Auto-generated method stub
-		return null;
+	public Page<T> getNextPage(Page<T> page, Class<T> clazz) throws NotFoundAnnotationException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, SQLException, IntrospectionException, ParseException {
+//		if(page.getCurrentPage() == page.getTotalPage())
+//			return page;
+		//获取表名
+		String tableName = getTableName(clazz);
+		List<T> list =  findAllByConditionsWithLimit(null, clazz, page.getCurrentPage()*Page.pageSize,  page.getCurrentPage()  *  Page.pageSize  + Page.pageSize);
+		page.setDataList(list);
+		page.setCurrentPage(page.getCurrentPage() + 1);
+		
+		return page;
 	}
 
+	/**
+	 * 返回表的总数
+	 * @param clazz
+	 * @return
+	 * @throws NotFoundAnnotationException 
+	 * @throws SQLException 
+	 */
+	@Override
+	public int sumOfRecords(Class<T> clazz) throws NotFoundAnnotationException, SQLException{ 
+		String tableName = getTableName(clazz);
+		int size = 0;
+		String sql  = "select count(*) from "+tableName;
+		Statement st = DaoUtils.getConnection().createStatement();
+		ResultSet rs = st.executeQuery(sql);
+		if(rs.next()){ 
+			size = rs.getInt(1);
+		}
+		return size;
+	}
 	@Override
 	public T get(Object id, Class<T> clazz) throws NotFoundAnnotationException,
 			InstantiationException, IllegalAccessException, SQLException,
@@ -115,7 +142,6 @@ public class SqliteDaoImpl<T> implements Dao<T> {
 		sql.append("insert into ").append(tableName).append(" (")
 				.append(fieldNames.toString()).append(") values (")
 				.append(placeholders.toString()).append(")");
-		System.out.println(sql);
 		PreparedStatement ps = DaoUtils.getConnection().prepareStatement(
 				sql.toString());
 		setParameter(fieldValues, ps);
@@ -280,6 +306,67 @@ public class SqliteDaoImpl<T> implements Dao<T> {
 			ps = DaoUtils.getConnection().prepareStatement(sql);
 		}
 
+		// 执行SQL
+		ResultSet rs = ps.executeQuery();
+		while (rs.next()) {
+			T t = clazz.newInstance();
+			initObject(t, fields, rs);
+			list.add(t);
+		}
+		// 释放资源
+		DaoUtils.close(ps, rs);
+		System.out.println(sql);
+		return list;
+	}
+	@Override
+	public List<T> findAllByConditionsWithLimit(Map<String, Object> sqlWhereMap,
+			Class<T> clazz ,int floor,int ceiling) throws NotFoundAnnotationException, SQLException,
+			InstantiationException, IllegalAccessException,
+			IllegalArgumentException, InvocationTargetException,
+			IntrospectionException, ParseException {
+		List<T> list = new ArrayList<T>();
+		String tableName = getTableName(clazz);
+		String idFieldName = "";
+		
+		// 获取要查询的字段
+		StringBuilder fieldNames = new StringBuilder();
+		Field[] fields = clazz.getDeclaredFields();
+		for (Field field : fields) {
+			String propertyName = field.getName();
+			if (field.isAnnotationPresent(Id.class)) {
+				idFieldName = field.getAnnotation(Id.class).value();
+				fieldNames.append(TABLE_ALIAS + "." + idFieldName)
+				.append(" as ").append(propertyName).append(",");
+			} else if (field.isAnnotationPresent(Column.class)) {
+				fieldNames
+				.append(TABLE_ALIAS + "."
+						+ field.getAnnotation(Column.class).value())
+						.append(" as ").append(propertyName).append(",");
+			}
+		}
+		fieldNames.deleteCharAt(fieldNames.length() - 1);
+		// 拼装SQL
+		String sql = "select " + fieldNames + " from " + tableName + " "
+				+ TABLE_ALIAS;
+		PreparedStatement ps = null;
+		List<Object> values = null;
+		if (sqlWhereMap != null) {
+			List<Object> sqlWhereWithValue = getSqlWhereWithValues(sqlWhereMap);
+			if (sqlWhereWithValue != null) {
+				String sqlWhere = (String) sqlWhereWithValue.get(0);
+				sql += sqlWhere;
+				values = (List<Object>) sqlWhereWithValue.get(1);
+			}
+		}
+		sql +=" limit " +floor +", "+ceiling;
+		// 设置参数占位符的值
+		if (values != null) {
+			ps = DaoUtils.getConnection().prepareStatement(sql);
+			setParameter(values, ps);
+		} else {
+			ps = DaoUtils.getConnection().prepareStatement(sql);
+		}
+		
 		// 执行SQL
 		ResultSet rs = ps.executeQuery();
 		while (rs.next()) {
