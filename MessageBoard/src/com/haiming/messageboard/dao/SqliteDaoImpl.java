@@ -9,6 +9,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -39,7 +42,7 @@ public class SqliteDaoImpl<T> implements Dao<T> {
 	public T get(Object id, Class<T> clazz) throws NotFoundAnnotationException,
 			InstantiationException, IllegalAccessException, SQLException,
 			IllegalArgumentException, InvocationTargetException,
-			IntrospectionException {
+			IntrospectionException, ParseException {
 		String idFieldName = "";
 		Field[] fields = clazz.getDeclaredFields();
 		boolean flag = false;
@@ -71,19 +74,35 @@ public class SqliteDaoImpl<T> implements Dao<T> {
 		StringBuilder fieldNames = new StringBuilder();
 		List<Object> fieldValues = new ArrayList<Object>();
 		StringBuilder placeholders = new StringBuilder();
+		Object fieldValue;
+		String fieldName;
 		Field[] fields = clazz.getDeclaredFields();
 		for (Field field : fields) {
 			PropertyDescriptor pd = new PropertyDescriptor(field.getName(),
 					t.getClass());
 			if (field.isAnnotationPresent(Id.class)) {
-				fieldNames.append(field.getAnnotation(Id.class).value())
-						.append(",");
-				// 读取该域的值
-				fieldValues.add(pd.getReadMethod().invoke(t));
+				fieldName = field.getAnnotation(Id.class).value();
+				fieldValue = pd.getReadMethod().invoke(t);
+				//不为空的字段才有效,id为0的话视为不合法
+				if(fieldValue != null &&  (int)fieldValue  !=0){ 
+					fieldNames.append(fieldName).append(",");
+					System.out.println(fieldName + " " +fieldValue);
+					fieldValues.add(fieldValue);
+				}else { 
+					continue;
+				}
+					
 			} else if (field.isAnnotationPresent(Column.class)) {
-				fieldNames.append(field.getAnnotation(Column.class).value())
-						.append(",");
-				fieldValues.add(pd.getReadMethod().invoke(t));
+				fieldName = field.getAnnotation(Column.class).value();
+				fieldValue = pd.getReadMethod().invoke(t);
+				if(fieldValue != null){ 
+					fieldNames.append(fieldName).append(",");
+					fieldValues.add(fieldValue);
+				}else { 
+					continue;
+				}
+					
+
 			}
 			placeholders.append("?").append(",");
 		}
@@ -96,6 +115,7 @@ public class SqliteDaoImpl<T> implements Dao<T> {
 		sql.append("insert into ").append(tableName).append(" (")
 				.append(fieldNames.toString()).append(") values (")
 				.append(placeholders.toString()).append(")");
+		System.out.println(sql);
 		PreparedStatement ps = DaoUtils.getConnection().prepareStatement(
 				sql.toString());
 		setParameter(fieldValues, ps);
@@ -216,7 +236,7 @@ public class SqliteDaoImpl<T> implements Dao<T> {
 			Class<T> clazz) throws NotFoundAnnotationException, SQLException,
 			InstantiationException, IllegalAccessException,
 			IllegalArgumentException, InvocationTargetException,
-			IntrospectionException {
+			IntrospectionException, ParseException {
 		List<T> list = new ArrayList<T>();
 		String tableName = getTableName(clazz);
 		String idFieldName = "";
@@ -284,11 +304,12 @@ public class SqliteDaoImpl<T> implements Dao<T> {
 	 * @throws InvocationTargetException
 	 * @throws IllegalArgumentException
 	 * @throws IllegalAccessException
+	 * @throws ParseException 
 	 */
 	private void initObject(T t, Field[] fields, ResultSet rs)
 			throws SQLException, IntrospectionException,
 			IllegalAccessException, IllegalArgumentException,
-			InvocationTargetException {
+			InvocationTargetException, ParseException {
 		for (Field field : fields) {
 			String propertyName = field.getName();
 			Object paramVal = null;
@@ -315,7 +336,10 @@ public class SqliteDaoImpl<T> implements Dao<T> {
 					|| clazzField == Character.class) {
 				paramVal = rs.getCharacterStream(propertyName);
 			} else if (clazzField == Date.class) {
-				paramVal = rs.getTimestamp(propertyName);
+				DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+				String dateStr = rs.getString(propertyName);
+				paramVal = df.parseObject(dateStr);
+				System.out.println(paramVal);
 			}
 			// 调用Bean的set方法
 			PropertyDescriptor pd = new PropertyDescriptor(propertyName,
