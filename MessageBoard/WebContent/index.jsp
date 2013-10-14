@@ -10,6 +10,6 @@
 <%@ include file="top.jsp" %>
 <%@ include file="middle.jsp" %>
 <%@ include file="bottom.jsp"%>
-<label>哈哈哈哈哈</label>
+
 </body>
 </html>
