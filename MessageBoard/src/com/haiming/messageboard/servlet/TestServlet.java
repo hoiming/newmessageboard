@@ -7,6 +7,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import com.haiming.messageboard.bean.DateTimeInfo;
 import com.haiming.messageboard.bean.Page;
@@ -53,16 +54,28 @@ public class TestServlet extends HttpServlet {
 		LoginHandler login = new ConcreteLoginHandler();
 		if (login.verify(username, password)) {
 			// 成功验证，转到登录页面
-			User u = new User(username, password);
+			User u = ConcreteLoginHandler.userInstance();//这样就有user的所有信息，包括最重要的id
 			request.getSession().setAttribute("user", u);
-			TimeInterface time = new TestDateTimeInfo();
-			DateTimeInfo dtinfo = new DateTimeInfo(time.getDateTimeInfo());
-			request.getSession().setAttribute("dateTimeInfo", dtinfo);
 			response.sendRedirect("index.jsp");
-			ThemeProvider provider = new ThemeProvider();
-			Page<Theme> page = new Page<Theme>(Theme.class);
-			request.getSession().setAttribute("page", provider.getThemes(page));
-		}
+			getContent(request );
+		}else {
+			//getContent(request);
+			response.sendRedirect("login.jsp");
+		}		
+	}
+
+	/**
+	 * 获取内容
+	 * @param request
+	 */
+	private void getContent(HttpServletRequest request) {
+		TimeInterface time = new TestDateTimeInfo();
+		DateTimeInfo dtinfo = new DateTimeInfo(time.getDateTimeInfo());
+		request.getSession().setAttribute("dateTimeInfo", dtinfo);
+		ThemeProvider provider = new ThemeProvider();
+		Page<Theme> page = new Page<Theme>(Theme.class);
+		request.getSession().setAttribute("page", provider.getThemes(page));
+		
 	}
 
 }
