@@ -39,8 +39,8 @@ public class SqliteDaoImpl<T> implements Dao<T> {
 //			return page;
 		//获取表名
 		String tableName = getTableName(clazz);
-		List<T> list =  findAllByConditionsWithLimit(null, clazz, page.getCurrentPage()*Page.pageSize,  page.getCurrentPage()  *  Page.pageSize  + Page.pageSize);
-		page.setDataList(list);
+		List<T> list =  findAllByConditionsWithLimit(null, clazz, page.getCurrentPage()*Page.pageSize, Page.pageSize);
+		page.setDatalist(list);
 		page.setCurrentPage(page.getCurrentPage() + 1);
 		
 		return page;
@@ -320,7 +320,7 @@ public class SqliteDaoImpl<T> implements Dao<T> {
 	}
 	@Override
 	public List<T> findAllByConditionsWithLimit(Map<String, Object> sqlWhereMap,
-			Class<T> clazz ,int floor,int ceiling) throws NotFoundAnnotationException, SQLException,
+			Class<T> clazz ,int floor,int offset) throws NotFoundAnnotationException, SQLException,
 			InstantiationException, IllegalAccessException,
 			IllegalArgumentException, InvocationTargetException,
 			IntrospectionException, ParseException {
@@ -358,7 +358,7 @@ public class SqliteDaoImpl<T> implements Dao<T> {
 				values = (List<Object>) sqlWhereWithValue.get(1);
 			}
 		}
-		sql +=" limit " +floor +", "+ceiling;
+		sql +=" limit " +floor +", "+offset;
 		// 设置参数占位符的值
 		if (values != null) {
 			ps = DaoUtils.getConnection().prepareStatement(sql);
