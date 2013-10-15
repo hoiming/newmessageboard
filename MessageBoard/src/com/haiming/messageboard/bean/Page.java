@@ -44,10 +44,10 @@ public class Page<T>  {
 	public int getTotalPage(){ 
 		return totalPage;
 	}
-	public void setDataList(List<T> list){ 
+	public void setDatalist(List<T> list){ 
 		this.datalist = list;
 	}
-	public List<T> getDataList(){ 
+	public List<T> getDatalist(){ 
 		return datalist;
 	}
 	public String toString(){ 
