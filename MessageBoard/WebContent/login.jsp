@@ -9,8 +9,9 @@
 </head>
 <body>
 	<form method="post" action="test">
+		<div>${ErrorMessage }</div>
 		<div id="loginInfo">
-			<div id="inner" >
+			<div id="inner">
 				<label>用户名：</label> <input type="text" name="username" />
 			</div>
 			<div id="inner">
