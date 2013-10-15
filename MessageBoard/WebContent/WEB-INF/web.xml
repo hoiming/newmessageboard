@@ -15,8 +15,16 @@
     <servlet-name>test</servlet-name>
     <servlet-class>com.haiming.messageboard.servlet.TestServlet</servlet-class>
   </servlet>
+  <servlet>
+  <servlet-name>navigate</servlet-name>
+  <servlet-class>com.haiming.messageboard.servlet.NavigationServlet</servlet-class>
+  </servlet>
   <servlet-mapping>
     <servlet-name>test</servlet-name>
     <url-pattern>/test</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+  	<servlet-name>navigate</servlet-name>
+  	<url-pattern>/navigate</url-pattern>
   </servlet-mapping>
 </web-app>
