@@ -1,0 +1,21 @@
+body{ 
+	text-align:center;
+}
+#themeArea{ 
+	border:1px solid black;
+	margin-top:50px;
+	margin-right:auto;
+	margin-left:auto;
+	width:600px;
+	height:300px;
+}
+#theme{ 
+	float:left;
+	padding:5px;
+}
+.input_2x{ 
+	width:450px;
+}
+#submit_reset{ 
+	float:left;
+}
