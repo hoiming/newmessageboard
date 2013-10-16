@@ -11,10 +11,14 @@
 </head>
 <body>
 	<div id="messageArea">
-		<div id="createTheme">发帖</div>
-		<div id="themeHead">
-			<span>标题</span> <span>时间</span>
-		</div>
+		<form action="navigate" method="get">
+			<div id="createTheme">
+				<a href="navigate?action=newTheme">发帖</a>
+			</div>
+			<div id="themeHead">
+				<span>标题</span> <span>时间</span>
+			</div>
+		</form>
 		<div id="list">
 			<ul>
 				<c:forEach items="${page.datalist }" var="item">
@@ -22,7 +26,7 @@
 				</c:forEach>
 			</ul>
 		</div>
-		<div><%@ include file="footer.jsp" %></div>
+		<div><%@ include file="footer.jsp"%></div>
 	</div>
 </body>
 </html>
