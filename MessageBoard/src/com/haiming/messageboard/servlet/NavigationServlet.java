@@ -57,7 +57,7 @@ public class NavigationServlet extends HttpServlet {
 			session.setAttribute("page", page);
 			break;
 		case "lastPage":
-			page.setCurrentPage(page.getTotalPage() - 1);
+			page.setCurrentPage(page.getTotalPage()  );
 			page = provider.getThemes(page);
 			session.setAttribute("page", page);
 			break;
