@@ -16,7 +16,7 @@ import com.haiming.messageboard.bean.User;
 import com.haiming.messageboard.logic.ConcreteLoginHandler;
 import com.haiming.messageboard.logic.LoginHandler;
 import com.haiming.messageboard.logic.TestDateTimeInfo;
-import com.haiming.messageboard.logic.ThemeProvider;
+import com.haiming.messageboard.logic.ThemeLogic;
 import com.haiming.messageboard.logic.TimeInterface;
 
 /**
@@ -72,7 +72,7 @@ public class TestServlet extends HttpServlet {
 		TimeInterface time = new TestDateTimeInfo();
 		DateTimeInfo dtinfo = new DateTimeInfo(time.getDateTimeInfo());
 		request.getSession().setAttribute("dateTimeInfo", dtinfo);
-		ThemeProvider provider = new ThemeProvider();
+		ThemeLogic provider = new ThemeLogic();
 		Page<Theme> page = new Page<Theme>(Theme.class);
 		request.getSession().setAttribute("page", provider.getThemes(page));
 		
