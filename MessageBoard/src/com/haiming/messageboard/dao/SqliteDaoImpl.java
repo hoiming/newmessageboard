@@ -63,6 +63,7 @@ public class SqliteDaoImpl<T> implements Dao<T> {
 		if(rs.next()){ 
 			size = rs.getInt(1);
 		}
+		DaoUtils.close(st, rs);
 		return size;
 	}
 	@Override
