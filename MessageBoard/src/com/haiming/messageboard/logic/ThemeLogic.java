@@ -34,7 +34,7 @@ public class ThemeLogic {
 	 * @param theme
 	 * @param user
 	 */
-	public void saveTheme(String theme,User user){ 
+	public Theme saveTheme(String theme,User user){ 
 		Theme t = new Theme();
 		t.setContent(theme);
 		t.setId(user.getId());
@@ -46,6 +46,7 @@ public class ThemeLogic {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		return t;
 	}
 	
 	
