@@ -16,15 +16,31 @@
     <servlet-class>com.haiming.messageboard.servlet.TestServlet</servlet-class>
   </servlet>
   <servlet>
-  <servlet-name>navigate</servlet-name>
-  <servlet-class>com.haiming.messageboard.servlet.NavigationServlet</servlet-class>
+    <servlet-name>navigate</servlet-name>
+    <servlet-class>com.haiming.messageboard.servlet.NavigationServlet</servlet-class>
   </servlet>
   <servlet-mapping>
     <servlet-name>test</servlet-name>
     <url-pattern>/test</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
-  	<servlet-name>navigate</servlet-name>
-  	<url-pattern>/navigate</url-pattern>
+    <servlet-name>navigate</servlet-name>
+    <url-pattern>/navigate</url-pattern>
   </servlet-mapping>
+  <servlet>
+    <servlet-name>theme</servlet-name>
+    <servlet-class>com.haiming.messageboard.servlet.ThemeServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>theme</servlet-name>
+    <url-pattern>/theme</url-pattern>
+  </servlet-mapping>
+  <filter>
+  <filter-name>authority</filter-name>
+  <filter-class>com.haiming.messageboard.filter.AuthorityFilter</filter-class>
+  </filter>
+  <filter-mapping>
+  	<filter-name>authority</filter-name>
+  	<url-pattern>/theme</url-pattern>
+  </filter-mapping>
 </web-app>
