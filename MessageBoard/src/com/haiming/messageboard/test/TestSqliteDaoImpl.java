@@ -1,5 +1,7 @@
 package com.haiming.messageboard.test;
 
+import java.util.Date;
+
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -32,6 +34,7 @@ public class TestSqliteDaoImpl {
 			Theme t = new Theme();
 			t.setId(0);
 			t.setContent("Test Content");
+			t.setCreatedtime(new Date());
 			themeDao.save(t);
 		}
 
@@ -48,7 +51,7 @@ public class TestSqliteDaoImpl {
 		System.out.println(m);
 	}
 
-	@Test
+	@Ignore
 	public void testPage() throws Exception {
 		Page<Theme> page = new Page<Theme>(Theme.class);
 		page = pageDao.getNextPage(page, Theme.class);
@@ -65,6 +68,11 @@ public class TestSqliteDaoImpl {
 		page = pageDao.getNextPage(page, Theme.class);
 		System.out.println(page);
 
+	}
+	@Test
+	public void testThemeLogic() throws Exception{ 
+		Theme t = themeDao.get(20, Theme.class);
+		System.out.println(t);
 	}
 
 }
