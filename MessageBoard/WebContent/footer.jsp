@@ -21,7 +21,7 @@
 			</c:choose>
 
 			<c:choose>
-				<c:when test="${page.currentPage == page.totalPage }">
+				<c:when test="${page.currentPage > page.totalPage }">
 					<a>下一页</a>
 				</c:when>
 				<c:otherwise>
