@@ -169,8 +169,13 @@ public class SqliteDaoImpl<T> implements Dao<T> {
 				ps.setBoolean(i, (Boolean) fieldValue);
 			else if (clazzValue == char.class || clazzValue == Character.class)
 				ps.setObject(i, fieldValue, Types.CHAR);
-			else if (clazzValue == Date.class)
-				ps.setTimestamp(i, new Timestamp(((Date) fieldValue).getTime()));
+			else if (clazzValue == Date.class){ 
+				//时间这里要格式化之后，存入字符串
+				DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+				String dateStr = df.format((Date)fieldValue);
+				ps.setString(i,dateStr);
+			}
+				
 			else
 				ps.setObject(i, fieldValue, Types.NUMERIC);
 		}
