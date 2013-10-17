@@ -9,8 +9,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import com.haiming.messageboard.bean.MessagePage;
 import com.haiming.messageboard.bean.Page;
 import com.haiming.messageboard.bean.Theme;
+import com.haiming.messageboard.logic.MessageLogic;
 import com.haiming.messageboard.logic.ThemeLogic;
 
 /**
@@ -34,10 +36,11 @@ public class NavigationServlet extends HttpServlet {
 	 */
 	protected void doGet(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
-		HttpSession session = request.getSession();
+		HttpSession session = request.getSession(true);
 		// 应该可以肯定page不为空，index.jsp每次都检查page对象是否为空
 		Page<Theme> page = (Page<Theme>) session.getAttribute("page");
 		ThemeLogic provider = new ThemeLogic();
+		MessageLogic messageLogic = new MessageLogic();
 		String parameter = request.getParameter("action");
 		System.out.println(parameter);
 		switch (parameter) {
@@ -57,15 +60,30 @@ public class NavigationServlet extends HttpServlet {
 			session.setAttribute("page", page);
 			break;
 		case "lastPage":
-			page.setCurrentPage(page.getTotalPage()  );
+			page.setCurrentPage(page.getTotalPage());
 			page = provider.getThemes(page);
 			session.setAttribute("page", page);
 			break;
 		case "newTheme":
-			//发表新的帖子
+			// 发表新的帖子
 			response.sendRedirect("theme.jsp");
+			return;
+		case "viewMessage":
+			int themeid = -1;
+			MessagePage messagePage = null;
+			try {
+				String idStr = request.getParameter("themeid");
+				themeid = Integer.valueOf(idStr);
+				  messagePage = messageLogic.getMessageByTheme(themeid);
+				session.setAttribute("messagePage", messagePage);
+			} catch (NumberFormatException e) {
+				e.printStackTrace();
+			}
+			session.setAttribute("messagePage", messagePage);
+			response.sendRedirect("message.jsp");
+			System.out.println(messagePage);
 			return ;
-			 
+
 		}
 		response.sendRedirect("index.jsp");
 
