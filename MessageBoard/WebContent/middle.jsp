@@ -18,14 +18,15 @@
 			<div id="themeHead">
 				<span>标题</span> <span>时间</span>
 			</div>
-		</form>
+		
 		<div id="list">
 			<ul>
 				<c:forEach items="${page.datalist }" var="item">
-					<li><span>${item.content }</span><span>${item.createdtime }</span></li>
+					<li><span><a href="navigate?action=viewMessage&themeid=${item.themeid}" >${item.content }</a></span><span>${item.createdtime }</span></li>
 				</c:forEach>
 			</ul>
 		</div>
+		</form>
 		<div><%@ include file="footer.jsp"%></div>
 	</div>
 </body>
