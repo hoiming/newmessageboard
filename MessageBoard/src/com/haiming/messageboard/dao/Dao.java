@@ -7,7 +7,9 @@ import java.text.ParseException;
 import java.util.List;
 import java.util.Map;
 
+import com.haiming.messageboard.bean.Message;
 import com.haiming.messageboard.bean.Page;
+import com.haiming.messageboard.bean.User;
 import com.haiming.messageboard.exception.NotFoundAnnotationException;
 
 /**
@@ -29,6 +31,7 @@ public interface Dao<T>   {
 	List<T> findAllByConditionsWithLimit(Map<String, Object> sqlWhereMap,
 			Class<T> clazz,int floor,int ceiling) throws Exception;
 	int sumOfRecords(Class<T> clazz) throws Exception;
+	Map<Message, User> getUserAndMessage(int themeid) throws SQLException;
  
 
 }
