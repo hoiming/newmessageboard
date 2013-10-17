@@ -8,12 +8,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Timestamp;
 import java.sql.Types;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -21,11 +21,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeMap;
 
 import com.haiming.messageboard.annotation.Column;
 import com.haiming.messageboard.annotation.Entity;
 import com.haiming.messageboard.annotation.Id;
+import com.haiming.messageboard.bean.Message;
+import com.haiming.messageboard.bean.MessageComparator;
 import com.haiming.messageboard.bean.Page;
+import com.haiming.messageboard.bean.User;
 import com.haiming.messageboard.exception.NotFoundAnnotationException;
 
 public class SqliteDaoImpl<T> implements Dao<T> {
@@ -34,38 +38,46 @@ public class SqliteDaoImpl<T> implements Dao<T> {
 	private static final String TABLE_ALIAS = "t";
 
 	@Override
-	public Page<T> getNextPage(Page<T> page, Class<T> clazz) throws NotFoundAnnotationException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, SQLException, IntrospectionException, ParseException {
-//		if(page.getCurrentPage() == page.getTotalPage())
-//			return page;
-		//获取表名
+	public Page<T> getNextPage(Page<T> page, Class<T> clazz)
+			throws NotFoundAnnotationException, InstantiationException,
+			IllegalAccessException, IllegalArgumentException,
+			InvocationTargetException, SQLException, IntrospectionException,
+			ParseException {
+		// if(page.getCurrentPage() == page.getTotalPage())
+		// return page;
+		// 获取表名
 		String tableName = getTableName(clazz);
-		List<T> list =  findAllByConditionsWithLimit(null, clazz, page.getCurrentPage()*Page.pageSize, Page.pageSize);
+		List<T> list = findAllByConditionsWithLimit(null, clazz,
+				page.getCurrentPage() * Page.pageSize, Page.pageSize);
 		page.setDatalist(list);
 		page.setCurrentPage(page.getCurrentPage() + 1);
-		
+
 		return page;
 	}
 
 	/**
 	 * 返回表的总数
+	 * 
 	 * @param clazz
 	 * @return
-	 * @throws NotFoundAnnotationException 
-	 * @throws SQLException 
+	 * @throws NotFoundAnnotationException
+	 * @throws SQLException
 	 */
 	@Override
-	public int sumOfRecords(Class<T> clazz) throws NotFoundAnnotationException, SQLException{ 
+	public int sumOfRecords(Class<T> clazz) throws NotFoundAnnotationException,
+			SQLException {
 		String tableName = getTableName(clazz);
 		int size = 0;
-		String sql  = "select count(*) from "+tableName;
+		String sql = "select count(*) from " + tableName;
 		Statement st = DaoUtils.getConnection().createStatement();
 		ResultSet rs = st.executeQuery(sql);
-		if(rs.next()){ 
+		if (rs.next()) {
 			size = rs.getInt(1);
 		}
 		DaoUtils.close(st, rs);
 		return size;
 	}
+
 	@Override
 	public T get(Object id, Class<T> clazz) throws NotFoundAnnotationException,
 			InstantiationException, IllegalAccessException, SQLException,
@@ -111,25 +123,24 @@ public class SqliteDaoImpl<T> implements Dao<T> {
 			if (field.isAnnotationPresent(Id.class)) {
 				fieldName = field.getAnnotation(Id.class).value();
 				fieldValue = pd.getReadMethod().invoke(t);
-				//不为空的字段才有效,id为0的话视为不合法
-				if(fieldValue != null &&  (int)fieldValue  !=0){ 
+				// 不为空的字段才有效,id为0的话视为不合法
+				if (fieldValue != null && (int) fieldValue != 0) {
 					fieldNames.append(fieldName).append(",");
-					System.out.println(fieldName + " " +fieldValue);
+					System.out.println(fieldName + " " + fieldValue);
 					fieldValues.add(fieldValue);
-				}else { 
+				} else {
 					continue;
 				}
-					
+
 			} else if (field.isAnnotationPresent(Column.class)) {
 				fieldName = field.getAnnotation(Column.class).value();
 				fieldValue = pd.getReadMethod().invoke(t);
-				if(fieldValue != null){ 
+				if (fieldValue != null) {
 					fieldNames.append(fieldName).append(",");
 					fieldValues.add(fieldValue);
-				}else { 
+				} else {
 					continue;
 				}
-					
 
 			}
 			placeholders.append("?").append(",");
@@ -170,13 +181,13 @@ public class SqliteDaoImpl<T> implements Dao<T> {
 				ps.setBoolean(i, (Boolean) fieldValue);
 			else if (clazzValue == char.class || clazzValue == Character.class)
 				ps.setObject(i, fieldValue, Types.CHAR);
-			else if (clazzValue == Date.class){ 
-				//时间这里要格式化之后，存入字符串
+			else if (clazzValue == Date.class) {
+				// 时间这里要格式化之后，存入字符串
 				DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-				String dateStr = df.format((Date)fieldValue);
-				ps.setString(i,dateStr);
+				String dateStr = df.format((Date) fieldValue);
+				ps.setString(i, dateStr);
 			}
-				
+
 			else
 				ps.setObject(i, fieldValue, Types.NUMERIC);
 		}
@@ -210,7 +221,7 @@ public class SqliteDaoImpl<T> implements Dao<T> {
 	 * @throws InvocationTargetException
 	 * @throws IllegalArgumentException
 	 * @throws IllegalAccessException
-	 * @throws SQLException 
+	 * @throws SQLException
 	 */
 	@Override
 	public void update(T t) throws NotFoundAnnotationException,
@@ -252,11 +263,12 @@ public class SqliteDaoImpl<T> implements Dao<T> {
 		}
 		sql.deleteCharAt(sql.length() - 1).append(" where ")
 				.append(fieldNames.get(index)).append("=").append("?");
-		//设置SQL参数占位符的值
+		// 设置SQL参数占位符的值
 		System.out.println(sql);
-		PreparedStatement ps = DaoUtils.getConnection().prepareStatement(sql.toString());
-		setParameter(fieldValues,ps);
-		//执行SQL
+		PreparedStatement ps = DaoUtils.getConnection().prepareStatement(
+				sql.toString());
+		setParameter(fieldValues, ps);
+		// 执行SQL
 		ps.execute();
 		DaoUtils.close(ps, null);
 		System.out.println(sql + "\n" + clazz.getSimpleName() + "修改成功");
@@ -324,16 +336,21 @@ public class SqliteDaoImpl<T> implements Dao<T> {
 		System.out.println(sql);
 		return list;
 	}
+
+	/**
+	 * 分页用到的方法
+	 */
 	@Override
-	public List<T> findAllByConditionsWithLimit(Map<String, Object> sqlWhereMap,
-			Class<T> clazz ,int floor,int offset) throws NotFoundAnnotationException, SQLException,
+	public List<T> findAllByConditionsWithLimit(
+			Map<String, Object> sqlWhereMap, Class<T> clazz, int floor,
+			int offset) throws NotFoundAnnotationException, SQLException,
 			InstantiationException, IllegalAccessException,
 			IllegalArgumentException, InvocationTargetException,
 			IntrospectionException, ParseException {
 		List<T> list = new ArrayList<T>();
 		String tableName = getTableName(clazz);
 		String idFieldName = "";
-		
+
 		// 获取要查询的字段
 		StringBuilder fieldNames = new StringBuilder();
 		Field[] fields = clazz.getDeclaredFields();
@@ -342,11 +359,11 @@ public class SqliteDaoImpl<T> implements Dao<T> {
 			if (field.isAnnotationPresent(Id.class)) {
 				idFieldName = field.getAnnotation(Id.class).value();
 				fieldNames.append(TABLE_ALIAS + "." + idFieldName)
-				.append(" as ").append(propertyName).append(",");
+						.append(" as ").append(propertyName).append(",");
 			} else if (field.isAnnotationPresent(Column.class)) {
 				fieldNames
-				.append(TABLE_ALIAS + "."
-						+ field.getAnnotation(Column.class).value())
+						.append(TABLE_ALIAS + "."
+								+ field.getAnnotation(Column.class).value())
 						.append(" as ").append(propertyName).append(",");
 			}
 		}
@@ -364,7 +381,7 @@ public class SqliteDaoImpl<T> implements Dao<T> {
 				values = (List<Object>) sqlWhereWithValue.get(1);
 			}
 		}
-		sql +=" limit " +floor +", "+offset;
+		sql += " limit " + floor + ", " + offset;
 		// 设置参数占位符的值
 		if (values != null) {
 			ps = DaoUtils.getConnection().prepareStatement(sql);
@@ -372,7 +389,7 @@ public class SqliteDaoImpl<T> implements Dao<T> {
 		} else {
 			ps = DaoUtils.getConnection().prepareStatement(sql);
 		}
-		
+
 		// 执行SQL
 		ResultSet rs = ps.executeQuery();
 		while (rs.next()) {
@@ -397,7 +414,7 @@ public class SqliteDaoImpl<T> implements Dao<T> {
 	 * @throws InvocationTargetException
 	 * @throws IllegalArgumentException
 	 * @throws IllegalAccessException
-	 * @throws ParseException 
+	 * @throws ParseException
 	 */
 	private void initObject(T t, Field[] fields, ResultSet rs)
 			throws SQLException, IntrospectionException,
@@ -513,16 +530,16 @@ public class SqliteDaoImpl<T> implements Dao<T> {
 		Object fieldValue;
 		Field[] fields = clazz.getDeclaredFields();
 		Map<String, Object> sqlWhereMap = new HashMap<String, Object>();
-		 
+
 		boolean flag = false;
 		for (Field field : fields) {
 			if (field.isAnnotationPresent(Column.class)) {
 				fieldName = field.getAnnotation(Column.class).value();
-				PropertyDescriptor pd = new PropertyDescriptor(fieldName,clazz);
+				PropertyDescriptor pd = new PropertyDescriptor(fieldName, clazz);
 				fieldValue = pd.getReadMethod().invoke(obj);
 				sqlWhereMap.put(fieldName, fieldValue);
 				flag = true;
-				
+
 			}
 		}
 		if (!flag) {
@@ -530,8 +547,46 @@ public class SqliteDaoImpl<T> implements Dao<T> {
 					+ " object not found column property.");
 		}
 		// 拼装SQL
-		
+
 		List<T> list = findAllByConditions(sqlWhereMap, clazz);
 		return list.size() > 0 ? list.get(0) : null;
+	}
+
+	/**
+	 * 联合查询 使用TreeMap实现有序
+	 * 
+	 * @return
+	 * @throws SQLException
+	 */
+	@Override
+	public Map<Message, User> getUserAndMessage(int themeid)
+			throws SQLException {
+		Comparator<? super Message> comparator = new MessageComparator();
+		Map<Message, User> map = new TreeMap<Message, User>(comparator);
+		String sql = "select u.id,u.username,m.content,"
+				+ "m.createdtime from user u,message m "
+				+ "where u.id=m.id and m.themeid=" + themeid;
+		Statement st = DaoUtils.getConnection().createStatement();
+		ResultSet rs = st.executeQuery(sql);
+		while (rs.next()) {
+			User u = new User();
+			Message m = new Message();
+			u.setId(rs.getInt(1));
+			u.setUsername(rs.getString(2));
+			m.setContent(rs.getString(3));
+			m.setThemeid(themeid);
+			DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			String dateStr = rs.getString(4);
+			try {
+				m.setCreatedtime(df. parse (dateStr));
+			} catch (ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			map.put(m, u);
+
+		}
+		return map;
+
 	}
 }
