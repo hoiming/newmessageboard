@@ -1,0 +1,13 @@
+user表：
+CREATE TABLE user (id integer primary key,username varchar(20) not null unique,p
+assword varchar(40) not null);
+theme表：
+CREATE TABLE theme(id integer,themeid integer primary key,content varchar(200),c
+reatedtime timestamp not null default (datetime('now','localtime')),
+foreign key(id) references user(id));
+message表：
+CREATE TABLE message(id integer,themeid integer,messageid integer primary key,co
+ntent varchar(400),createdtime timestamp not null default (datetime('now','local
+time')),foreign key(id) references user(id),foreign key(themeid) references them
+e(themeid));
+
