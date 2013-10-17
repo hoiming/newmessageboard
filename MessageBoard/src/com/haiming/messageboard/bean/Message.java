@@ -7,7 +7,7 @@ import com.haiming.messageboard.annotation.Entity;
 import com.haiming.messageboard.annotation.Id;
 
 @Entity("message")
-public class Message {
+public class Message implements Comparable {
 	@Column("id")
 	private int id;
 	@Column("themeid")
@@ -61,9 +61,17 @@ public class Message {
 	public void setCreatedtime(Date crreatedtime) {
 		this.createdtime = crreatedtime;
 	}
-	
-	public String toString(){ 
-		return id + " " + themeid + " " + messageid + " " + content + " " + createdtime;
+
+	public String toString() {
+		return id + " " + themeid + " " + messageid + " " + content + " "
+				+ createdtime;
+	}
+
+	@Override
+	public int compareTo(Object arg0) {
+		Message m = (Message) arg0;
+		return this.createdtime.compareTo(m.getCreatedtime());
+
 	}
 
 }
