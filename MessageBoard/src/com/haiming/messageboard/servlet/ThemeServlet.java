@@ -1,7 +1,6 @@
 package com.haiming.messageboard.servlet;
 
 import java.io.IOException;
-import java.util.Date;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -10,8 +9,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import com.haiming.messageboard.bean.Page;
 import com.haiming.messageboard.bean.Theme;
 import com.haiming.messageboard.bean.User;
+import com.haiming.messageboard.logic.MessageLogic;
 import com.haiming.messageboard.logic.ThemeLogic;
 import com.haiming.messageboard.utils.MyTools;
 
@@ -49,10 +50,14 @@ public class ThemeServlet extends HttpServlet {
 		ThemeLogic themeLogic = new ThemeLogic();
 		User u = (User) session.getAttribute("user");
 		System.out.println(u);
-		String theme =MyTools.toUTF8(request.getParameter("theme"));
-		themeLogic.saveTheme(theme, u);
-		String message = MyTools.toUTF8(request.getParameter("message"));
-		System.out.println(message);
+		String theme = MyTools.changeHTML(MyTools.toUTF8(request.getParameter("theme")));
+		Theme t = themeLogic.saveTheme(theme, u);
+		String message =MyTools.changeHTML( MyTools.toUTF8(request.getParameter("message")));
+		MessageLogic messageLogic = new MessageLogic();
+		messageLogic.saveMessage(t, message, u);
+		Page<Theme> page = new Page<Theme>(Theme.class);
+		session.setAttribute("page", page);
+		response.sendRedirect("index.jsp");
 	}
 
 }
